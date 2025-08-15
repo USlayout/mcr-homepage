@@ -1,0 +1,56 @@
+services:
+  # フロントエンド（Node.js + TypeScript）
+  frontend:
+    image: node:24
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+
+  # バックエンド（Go）
+  backend:
+    image: golang:1.25.0
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8080:8080"
+    command: go run main.go
+    environment:
+      - GO_ENV=development
+    depends_on:
+      - database
+
+  # データベース（MysqlSQL）
+  database:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mcr_homepage
+      MYSQL_USER: mcr_user
+      MYSQL_PASSWORD: mcr_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # WordPress（CMS検討中）
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_USER: mcr_user
+      WORDPRESS_DB_PASSWORD: mcr_password
+      WORDPRESS_DB_NAME: mcr_wordpress
+    depends_on:
+      - database
+
+volumes:
+  mysql_data:
